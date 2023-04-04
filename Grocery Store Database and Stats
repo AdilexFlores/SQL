@@ -1,0 +1,21 @@
+--Create a grocery store database 
+
+CREATE TABLE clothes (id INTEGER PRIMARY KEY, name TEXT, inventory INTEGER, price INTEGER, sold INTEGER);
+
+INSERT INTO clothes VALUES (1, "shirts", 10, 15, 4);
+INSERT INTO clothes VALUES (2, "pants", 50, 20, 20);
+INSERT INTO  clothes VALUES (3, "shoes", 20, 60, 9);
+INSERT INTO clothes Values (4, "hats", 30, 10, 13);
+
+--display the database ordered by price.
+
+SELECT * FROM clothes 
+ORDER BY price;
+
+--what is the average price per item sold?
+
+SELECT AVG(price) "avg item price" FROM clothes;
+
+--what are the most popular items?
+SELECT name, price, sold FROM clothes
+ORDER BY sold desc; 
