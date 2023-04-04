@@ -19,11 +19,11 @@ INSERT INTO student_grades (name, number_grade, fraction_completed)
 INSERT INTO student_grades (name, number_grade, fraction_completed)
     VALUES ("Winstonia", 82, 0.9045);
 
---display the database by name, number grade, and percent completed
+--What is the percent of assignments completed?
 
 SELECT name, number_grade, ROUND(fraction_completed*100) AS percent_completed FROM student_grades; 
 
---display number of students group by letter grades
+--How many student received each letter grade?
 
 SELECT COUNT(*), 
 CASE 
