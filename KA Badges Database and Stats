@@ -1,4 +1,5 @@
---create
+--create a KA Badges database.
+
 CREATE TABLE badges (
     date TEXT,
     badge_type TEXT,
@@ -27,9 +28,15 @@ INSERT INTO badges (date, badge_type, badge_name, energy_points) VALUES ("2015, 
 INSERT INTO badges (date, badge_type, badge_name, energy_points) VALUES ("2015, 02/27", "Earth", "Five Times Ten to the Fifth", 0);
 INSERT INTO badges (date, badge_type, badge_name, energy_points) VALUES ("2015, 04/04", "Earth", "Investigator", 0);
 
+--What is the average points earned per badge?
+
 SELECT AVG(energy_points) AS "Average Points per Badge" FROM badges; 
 
-SELECT badge_type, SUM(energy_points) AS total_energy_points FROM badges GROUP BY badge_type HAVING total_energy_points > 0; 
+--What is the total points earned for each type of badge?
+
+SELECT badge_type, SUM(energy_points) AS total_energy_points FROM badges GROUP BY badge_type HAVING total_energy_points >= 0; 
+
+--How many of each badge were rewarded?
 
 Select  COUNT(*), badge_type,
     CASE
@@ -41,7 +48,10 @@ Select  COUNT(*), badge_type,
     END AS "reward"
 FROM badges GROUP BY reward ORDER BY reward; 
 
-SELECT * FROM badges WHERE date > 2015 AND energy_points > 5000;
+--how many badges earned points from the year 2015 and up? 
+
+SELECT * FROM badges WHERE date > 2015 AND energy_points > 0 ORDER BY energy_points;
+
+--what are all the Earth and Sun badges and their points earned for each badge?
 
 SELECT * FROM badges WHERE badge_type = "Earth" or badge_type = "Sun" ORDER BY badge_type, energy_points desc;
-
