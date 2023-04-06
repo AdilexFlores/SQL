@@ -1,0 +1,89 @@
+--create Famous People database.
+
+CREATE TABLE famous_people (id INTEGER PRIMARY KEY, 
+first_name TEXT, 
+last_name TEXT, 
+age INTEGER, 
+born TEXT);
+
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Alan", "Palomo", 34, "Monterrey, Mexico");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Chazwick", "Bundick", 36, "Columbia, South Carolina");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Ravyn", "Washington", 24, "Chicago, Illinois");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Miguel", "Pimentel", 37, "Los Angeles, California");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Louis", "Celestin", 30, "Port-au-Prince, Haiti");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Lou", "Phelps", 28, "Saint-Hubert, Quebec");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Stephen", "Bruner", 38, "Los Angeles, California");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Terence", "N'guyen", 33, "Paris, France");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Kevin", "Parker", 37, "Sydney, Australia");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Julian", "Casablancas", 44, "New York City, New York");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Sven", "Gamsky", 30, "Oakland, California");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Malcolm", "McCormick", 26, "Pittsburgh, Pennsylvania");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Victor", "Mensah", 29, "Chicago, Illinois");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Joseph", "Davis", 29, "Chicago, Illinois");
+INSERT INTO famous_people (first_name, last_name, age, born) VALUES ("Taalib", "Johnson", 45, "Philadelphia, Pennsylvania"); 
+
+
+CREATE TABLE songs (id INTEGER PRIMARY KEY, person_id INTEGER, name TEXT);
+
+INSERT INTO songs (person_id, name) VALUES (1, "Polish Girl");
+INSERT INTO songs (person_id, name) VALUES (1, "Annie");
+INSERT INTO songs (person_id, name) VALUES (2, "Rose Quartz");
+INSERT INTO songs (person_id, name) VALUES (2, "The Loop");
+INSERT INTO songs (person_id, name) VALUES (3, "Sticky");
+INSERT INTO songs (person_id, name) VALUES (3, "Last Breathe");
+INSERT INTO songs (person_id, name) VALUES (4, "Sure Thing");
+INSERT INTO songs (person_id, name) VALUES (4, "Adorn");
+INSERT INTO songs (person_id, name) VALUES (5, "You're the One");
+INSERT INTO songs (person_id, name) VALUES (5, "Chances");
+INSERT INTO songs (person_id, name) VALUES (6, "Tasty");
+INSERT INTO songs (person_id, name) VALUES (6, "Come Inside");
+INSERT INTO songs (person_id, name) VALUES (7, "Funny Thing");
+INSERT INTO songs (person_id, name) VALUES (7, "Dragonball Durag");
+INSERT INTO songs (person_id, name) VALUES (8, "Faded");
+INSERT INTO songs (person_id, name) VALUES (8, "Hot Hands");
+INSERT INTO songs (person_id, name) VALUES (9, "New Gold");
+INSERT INTO songs (person_id, name) VALUES (9, "Alter Ego");
+INSERT INTO songs (person_id, name) VALUES (10, "The Adults Are Talking");
+INSERT INTO songs (person_id, name) VALUES (10, "You Only Live Once");
+INSERT INTO songs (person_id, name) VALUES (11, "Goodie Bag");
+INSERT INTO songs (person_id, name) VALUES (11, "Hush Remix");
+INSERT INTO songs (person_id, name) VALUES (12, "Dang!");
+INSERT INTO songs (person_id, name) VALUES (12, "Ladders");
+INSERT INTO songs (person_id, name) VALUES (13, "Liquor Locker");
+INSERT INTO songs (person_id, name) VALUES (13, "Down On My Luck");
+INSERT INTO songs (person_id, name) VALUES (14, "Elastic");
+INSERT INTO songs (person_id, name) VALUES (14, "Girls @");
+INSERT INTO songs (person_id, name) VALUES (15, "Just Firends");
+INSERT INTO songs (person_id, name) VALUES (15, "sobeautiful");
+
+CREATE TABLE song_written (id INTEGER PRIMARY KEY, people_id INTEGER, song1_id INTEGER, song2_id INTEGER);
+
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (1, 1, 2);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (2, 3, 4);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (3, 5, 6);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (4, 7, 8);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (5, 9, 10);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (6, 11, 12);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (7, 13, 14);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (8, 15, 16);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (9, 17, 18);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (10, 19, 20);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (11, 21, 22);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (12, 23, 24);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (13, 25, 26);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (14, 27, 28);
+INSERT INTO song_written (people_id, song1_id, song2_id) VALUES (15, 29, 30);
+
+
+--where are these singers from?
+
+Select first_name, last_name, born FROM famous_people ORDER BY first_name;
+
+--what songs did these singers create?
+
+SELECT famous_people.first_name, famous_people.last_name, a.name AS song_title, b.name AS song_title FROM song_written 
+JOIN songs a
+ON song_written.song1_id = a.id
+JOIN songs b
+On song_written.song2_id = b.id JOIN famous_people ON song_written.people_id = famous_people.id ORDER BY famous_people.first_name;
+On song_written.song2_id = b.id;
