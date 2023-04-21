@@ -135,27 +135,76 @@ ON a.ReportsTo = b.EmployeeId;
 
 --List the top 10 tracks customers buy.
 
-SELECT SUM(i.Total), t.Name
-FROM tracks t
-JOIN invoice_items items
+SELECT i.TrackId, t.Name, COUNT(i.TrackId) AS [Total Sold]
+FROM invoice_items i
+JOIN tracks t
 USING (TrackId)
-JOIN invoices i 
-USING (InvoiceId)
-GROUP BY t.TrackId;
+GROUP BY i.InvoiceId
+ORDER BY COUNT(i.TrackId) desc
+LIMIT 10;
 
-SELECT i.InvoiceId, i.CustomerId, i.Total, item.InvoiceLineId, item.TrackId, item.Quantity FROM invoices i
-JOIN invoice_items item
-USING (InvoiceId);
+--List artists by most tracks sold.
 
-SELECT * FROM invoice_items
+WITH cte_top_songs AS (
+SELECT i.TrackId, t.Name AS TrackName, COUNT(i.TrackId) AS [Total Sold], t.AlbumId
+FROM invoice_items i
+JOIN tracks t
+USING (TrackId)
+GROUP BY i.InvoiceId
+ORDER BY COUNT(i.TrackId) desc),
+
+cte_album_artist AS( 
+SELECT a.AlbumId, art.Name AS ArtName
+FROM albums a
+JOIN Artists art
+USING (ArtistId)
+)
+
+SELECT ArtName, SUM([Total Sold]) AS Total_Tracks_Sold
+FROM cte_top_songs
+JOIN cte_album_artist 
+USING (AlbumId)
+GROUP BY ArtName
+ORDER BY Total_Tracks_Sold desc;
 
 --List the amount of times a track appears in a playlist.
---On average, how many tracks does a customer buy?
---Show the average song legnth for each album and for all the songs. 
---What are the most profitable months for each year?
---List the customers that have a total track purchase that is above average of all the customers and most genre they listen to the most.
---Which Countries purchase the most and least tracks?
+
+SELECT p.TrackId, t.Name, COUNT(p.PlaylistId) AS [Number of Playlists]
+FROM playlist_track p
+JOIN tracks t 
+USING (TrackId)
+GROUP BY p.TrackId
+ORDER BY COUNT(p.PlaylistId) desc;
+
 --Which playlist runs the longest?
+
+--On average, how many tracks does a customer buy?
+
+
+
+--Show only the customers that buy tracks above the average amount. 
+
+
+--Show the average song length for each album. 
+
+
+
+--What are the most profitable months for each year?
+
+
+-- What's the total amount spent per country?
+--Which Countries purchase the most and least tracks?
+
+
+
+
+
+
+
 --How many tracks are their per artist? 
---List artists based on popularity.
+
+
+
+
+
 
