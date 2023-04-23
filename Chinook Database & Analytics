@@ -178,11 +178,29 @@ ORDER BY COUNT(p.PlaylistId) desc;
 
 --Which playlist runs the longest?
 
---On average, how many tracks does a customer buy?
+WITH cte_sum_playlist AS (
+SELECT SUM(t.Milliseconds) AS Album_Length, p.playlistId, p.playlistId
+FROM tracks t
+JOIN playlist_track p
+USING (TrackId)
+GROUP BY p.PlaylistId
+)
 
+SELECT play.Name AS Playlist_Name, MAX(Album_Length)
+FROM cte_sum_playlist
+JOIN playlists play
+USING (PlaylistId);
 
+--Display how much a customer spends per order and an average of all their orders.
 
---Show only the customers that buy tracks above the average amount. 
+SELECT c.FirstName, c.LastName, i.InvoiceId, i.Total, ROUND(AVG(i.Total) over (PARTITION BY CustomerId),2) AS AVG_PerCustomer
+FROM Invoices i
+JOIN Customers c
+USING (CustomerId)
+ORDER BY i.CustomerId, i.InvoiceId;
+
+--Show only the customers who spent above the average amount per customer. 
+
 
 
 --Show the average song length for each album. 
