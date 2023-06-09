@@ -1,4 +1,4 @@
---Create a grocery store database 
+--Create a clothing store database 
 
 CREATE TABLE clothes (id INTEGER PRIMARY KEY, name TEXT, inventory INTEGER, price INTEGER, sold INTEGER);
 
