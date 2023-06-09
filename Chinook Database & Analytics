@@ -51,7 +51,7 @@ USING (CustomerId);
 
 --Show the Invoice Total, Customer name, Country, and Sales Agent name for all invoices and customers.
 
-SELECT i.Total, (c.FirstName || ', ' || c.LastName) AS Customer_Name, c.Country, (e.FirstName || ', ' || e.LastName) AS Sales_Agent_Name
+SELECT i.InvoiceID, i.Total, (c.FirstName || ' ' || c.LastName) AS [Customer Name], c.Country, (e.FirstName || ' ' || e.LastName) AS [Sales Agent Name]
 FROM employees e
 INNER JOIN customers c
 ON e.EmployeeId = c.SupportRepId
@@ -154,8 +154,7 @@ FROM cte_sum_totals;
 
 --Show a list of all employees and the contact info of whom they report to.
 
-SELECT a.FirstName, a.LastName, 
-CONCAT(b.FirstName, ' ' , b.LastName, ', ', b.Phone, ', ' , b.Email) AS 'Reports_To'
+SELECT (a.FirstName || ' ' || a.LastName) AS [Employee Name], (b.FirstName || ' ' || b.LastName) AS [Reports to], (b.Phone || '  -' || b.Email) AS [Contact Info]
 FROM employees a
 LEFT JOIN employees b
 ON a.ReportsTo = b.EmployeeId;
