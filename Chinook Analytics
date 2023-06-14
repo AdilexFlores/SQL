@@ -1,305 +1,124 @@
---Show Customers (their full names, customer ID, and country) who are not in the US.
-
-SELECT FirstName, LastName, Customerid, Country 
-FROM customers
-WHERE Country <> 'USA';
-
-
-
---Show only the Customers from Brazil.
-
-SELECT * 
-FROM customers
-WHERE Country = 'Brazil';
-
-
-
---Find the Invoices of customers who are from Brazil. The resulting table should show the customer's full name, Invoice ID, Date of the invoice, and billing country.
-
-SELECT c.FirstName, c.LastName, i.InvoiceId, i.InvoiceDate, i.BillingCountry
-FROM customers c
-FULL OUTTER JOIN invoices i
-WHERE Country = 'Brazil';
-
-
-
---Show the Employees who are Sales Agents.
-
-SELECT EmployeeId, FirstName, LastName, Title
-FROM employees
-WHERE Title LIKE 'Sales%Agent';
-
-
-
---Find a unique/distinct list of billing countries from the Invoice table.
-
-SELECT DISTINCT BillingCountry 
-FROM invoices;
-
-
-
---Provide a query that shows the invoices associated with each sales agent. The resulting table should include the Sales Agent's full name.
-
-SELECT e.FirstName, e.LastName, i.InvoiceId
-FROM employees e
-INNER JOIN customers c
-ON e.EmployeeId = c.SupportRepId
-INNER JOIN invoices i 
-USING (CustomerId);
-
-
-
---Show the Invoice Total, Customer name, Country, and Sales Agent name for all invoices and customers.
-
-SELECT i.InvoiceID, i.Total, (c.FirstName || ' ' || c.LastName) AS [Customer Name], c.Country, (e.FirstName || ' ' || e.LastName) AS [Sales Agent Name]
-FROM employees e
-INNER JOIN customers c
-ON e.EmployeeId = c.SupportRepId
-INNER JOIN invoices i 
-USING (CustomerId);
-
-
-
---How many Invoices were there in 2009?
-
-SELECT COUNT(DISTINCT InvoiceId) AS [Total 2009 Invoices]
-FROM invoices
-WHERE InvoiceDate LIKE '2009%';
-
-
-
---What are the total sales for 2009?
-
-SELECT SUM(Total) AS [Total Sales]
-FROM invoices
-WHERE InvoiceDate LIKE '2009%';
-
-
-
---Write a query that includes the purchased track name with each invoice line ID.
-
-SELECT DISTINCT t.Name, i.InvoiceLineId
-FROM tracks t
-INNER JOIN invoice_items i
-USING (TrackId);
-
-
-
---Write a query that includes the purchased track name AND artist name with each invoice line ID.
-
-SELECT DISTINCT t.Name AS [Track Name], art.Name AS [Artist Name], i.InvoiceId
-FROM artists art
-INNER JOIN albums a
-USING (ArtistId)
-INNER JOIN tracks t
-USING (AlbumId)
-INNER JOIN invoice_items i
-USING (TrackId);
-
-
-
---Provide a query that shows all the Tracks, and include the Album name, Media type, and Genre.
-
-WITH cte_track_info AS (
-    
-SELECT m.Name AS Media, t.Name AS Track, g.Name AS Genre, t.AlbumId
-FROM media_types m 
-INNER JOIN tracks t
-USING (MediaTypeId)
-INNER JOIN genres g 
-USING (GenreId)
-    
-)
-    
-SELECT Track, a.Title AS [Album Title], Media, Genre
-FROM cte_track_info
-INNER JOIN albums a
-USING (AlbumId);
-
-
-
---Show the total sales made by each sales agent.
-
-SELECT e.FirstName, e.LastName, SUM(i.Total)
-FROM employees e
-INNER JOIN customers c
-ON e.EmployeeId = c.SupportRepId
-INNER JOIN invoices i
-USING (CustomerId)
-    WHERE e.Title LIKE 'Sales%Agent'
-    GROUP BY e.EmployeeId;
-
-
-
---Which sales agent made the most dollars in sales in 2009?
-
-WITH cte_sum_totals AS (
-
-SELECT e.FirstName, e.LastName, SUM(i.Total) AS SUM_Total
-FROM employees e
-INNER JOIN customers c
-ON e.EmployeeId = c.SupportRepId
-INNER JOIN invoices i
-USING (CustomerId)
-WHERE e.Title LIKE 'Sales%Agent'
-AND InvoiceDate LIKE '2009%'
-GROUP BY e.EmployeeId
-
- )
-
-SELECT FirstName, LastName, MAX(SUM_Total) AS [Top Sales 2009]
-FROM cte_sum_totals;
-
-
-
---Show a list of all employees and the contact info of whom they report to.
-
-SELECT (a.FirstName || ' ' || a.LastName) AS [Employee Name], (b.FirstName || ' ' || b.LastName) AS [Reports to], (b.Phone || '  -' || b.Email) AS [Contact Info]
+--Create a list of all employees and the contact info of whom they report to in case they have questions or concerns. 
+SELECT (a.FirstName || ' ' || a.LastName) AS [Employee Name], (b.FirstName || ' ' || b.LastName) AS [Reports to], b.Title, b.Phone, b.fax, b.Email
 FROM employees a
 LEFT JOIN employees b
 ON a.ReportsTo = b.EmployeeId;
 
 
 
---List the top 10 tracks customers buy.
+--Show the employees who are Sales Agents.
 
-SELECT i.TrackId, t.Name, COUNT(i.TrackId) AS [Total Sold]
-FROM invoice_items i
-JOIN tracks t
-USING (TrackId)
-GROUP BY i.InvoiceId
-ORDER BY COUNT(i.TrackId) desc
-LIMIT 10;
+SELECT FirstName, LastName, Title
+FROM employees
+WHERE Title LIKE 'Sales%Agent';
 
 
 
---List artists by most tracks sold.
+/* 
+Calculate a performance report on sales agents. 
+Report contains a sales agent's sales by year compared to the average sales from all sales agents that year 
+and includes the lifetime sales to track overall performance. 
+This report may help with decision making for promotion considerations or if further training is needed to boost sales. 
+/*
 
-WITH cte_top_songs AS (
-SELECT i.TrackId, t.Name AS TrackName, COUNT(i.TrackId) AS [Total Sold], t.AlbumId
-FROM invoice_items i
-JOIN tracks t
-USING (TrackId)
-GROUP BY i.InvoiceId
-ORDER BY COUNT(i.TrackId) desc),
-
-cte_album_artist AS( 
-SELECT a.AlbumId, art.Name AS ArtName
-FROM albums a
-JOIN Artists art
-USING (ArtistId)
+WITH cte_totals AS 
+(
+SELECT e.FirstName, e.LastName, ROUND(SUM(i.Total),2) AS [Agent Sales],
+CASE
+WHEN invoicedate like '2009%' THEN '2009'
+WHEN invoicedate like '2010%' THEN '2010'
+WHEN invoicedate like '2011%' THEN '2011'
+WHEN invoicedate like '2012%' THEN '2012'
+WHEN invoicedate like '2013%' THEN '2013'
+END AS Year
+FROM employees e
+JOIN customers c
+ON e.EmployeeId = c.SupportRepId
+JOIN invoices i
+USING (CustomerId)
+WHERE e.Title LIKE 'Sales%Agent'
+GROUP BY Year, e.FirstName
+ORDER BY e.FirstName, Year
 )
-
-SELECT ArtName, SUM([Total Sold]) AS Total_Tracks_Sold
-FROM cte_top_songs
-JOIN cte_album_artist 
-USING (AlbumId)
-GROUP BY ArtName
-ORDER BY Total_Tracks_Sold desc;
+SELECT FirstName, LastName, Year, [Agent Sales], ROUND(AVG([Agent Sales]) OVER (PARTITION BY Year),2) AS [Average Agent Sales], 
+ROUND(SUM([Agent Sales]) OVER (PARTITION BY FirstName),2) AS [Lifetime Sales]
+FROM cte_totals
+ORDER BY FirstName, Year;
 
 
 
---List the amount of times a track appears in a playlist.
+--Create a list of managers to send a copy of the performance report.
 
-SELECT p.TrackId, t.Name, COUNT(p.PlaylistId) AS [Number of Playlists]
-FROM playlist_track p
-JOIN tracks t 
-USING (TrackId)
-GROUP BY p.TrackId
-ORDER BY COUNT(p.PlaylistId) desc;
-
-
-
---Which playlist runs the longest?
-
-WITH cte_sum_playlist AS (
-SELECT SUM(t.Milliseconds) AS Album_Length, p.playlistId, p.playlistId
-FROM tracks t
-JOIN playlist_track p
-USING (TrackId)
-GROUP BY p.PlaylistId
-)
-
-SELECT play.Name AS Playlist_Name, MAX(Album_Length)
-FROM cte_sum_playlist
-JOIN playlists play
-USING (PlaylistId);
+SELECT FirstName, LastName, Title, Phone, Fax, Email
+From employees 
+WHERE Title = 'General Manager' 
+OR
+Title = 'Sales Manager'
 
 
 
---Display how much a customer spends per order and an average of all their orders.
 
-SELECT c.FirstName, c.LastName, i.InvoiceId, i.Total, ROUND(AVG(i.Total) over (PARTITION BY CustomerId),2) AS AVG_PerCustomer
+
+
+
+/*
+What are the total invoices and profits for each year? 
+This will benefit stackholders to see if progress has been made over the years and open a conversation for improvements.
+/*
+
+SELECT COUNT(invoiceId) AS [Total Invoices], ROUND(SUM(Total),2) AS [Total Profits],
+CASE
+WHEN invoicedate like '2009%' THEN '2009'
+WHEN invoicedate like '2010%' THEN '2010'
+WHEN invoicedate like '2011%' THEN '2011'
+WHEN invoicedate like '2012%' THEN '2012'
+WHEN invoicedate like '2013%' THEN '2013'
+END AS 'Year'
+FROM invoices 
+GROUP BY Year
+ORDER BY Year;
+
+
+
+--Find a unique list of countries that have purchased tracks from the Invoice table.
+
+SELECT DISTINCT BillingCountry
+FROM invoices;
+
+
+
+--Show the countries that have bought over 150 tracks. These are the top 5 countries to consider when reviewing stats. 
+
+SELECT c.Country, SUM(item.Quantity) AS [Total Tracks]
+FROM invoice_items item
+JOIN invoices i
+USING (InvoiceId)
+JOIN Customers c
+USING (CustomerId)
+GROUP BY c.Country
+HAVING SUM(item.Quantity) > 150
+ORDER BY [Total Tracks] desc;
+
+
+
+/*
+Show only customers who spend above the average amount per customer and the country in which they reside. 
+This query may assist in further investigation of loyal customers' likes and preferances. 
+/*
+
+WITH cte_CustomerTotal AS
+(
+SELECT c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS [Total Spent], c.Country
 FROM Invoices i
 JOIN Customers c
 USING (CustomerId)
-ORDER BY i.CustomerId, i.InvoiceId;
-
-
-
---Show only the customers who spent above the average amount per customer. 
-
-DROP TABLE IF EXISTS CustomerTotal;
-CREATE TEMP TABLE CustomerTotal AS
-SELECT c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS TotalSpent
-FROM Invoices i
-JOIN Customers c
-USING (CustomerId)
-GROUP BY c.CustomerId;
-
-SELECT CustomerId, FirstName, LastName, TotalSpent, (SELECT ROUND(AVG(TotalSpent),2) FROM CustomerTotal) AS [Avg Amount Spent per Customer]
-FROM CustomerTotal
+GROUP BY c.CustomerId
+)
+SELECT FirstName, LastName, [Total Spent], (SELECT ROUND(AVG([Total Spent]),2) FROM cte_CustomerTotal) AS [Average Spent by Customer], Country
+FROM cte_CustomerTotal
 GROUP BY customerId
-HAVING TotalSpent >= (SELECT AVG(TotalSpent) FROM CustomerTotal);
-
-
-
---Show the average song length for each album. 
-
-SELECT SUM(t.Milliseconds)/60000 AS 'Minutes', a.Title 
-FROM tracks t
-JOIN albums a
-USING (AlbumId)
-GROUP BY a.Title; 
-
-
-
---What is the total profits for each year? List from most to least profitable year.
-
-DROP TABLE IF EXISTS cte_totalperYear;
-CREATE TEMP TABLE cte_totalperYear AS
-
-SELECT SUM(Total) AS total, InvoiceDate 
-FROM invoices
-WHERE invoiceDate like '2009%'
-UNION 
-SELECT SUM(Total) AS total, InvoiceDate
-FROM invoices
-WHERE invoiceDate like '2010%'
-UNION
-SELECT SUM(Total) AS total, InvoiceDate
-FROM invoices
-WHERE invoiceDate like '2011%'
-UNION
-SELECT SUM(Total) AS total, InvoiceDate
-FROM invoices
-WHERE invoiceDate like '2012%'
-UNION
-SELECT SUM(Total) AS total, InvoiceDate
-FROM invoices
-WHERE invoiceDate like '2013%'
-ORDER BY invoicedate;
-
-SELECT ROUND(Total,2) AS [Total Profits],
-CASE 
-    WHEN invoicedate like '2009%' THEN '2009'
-    WHEN invoicedate like '2010%' THEN '2010'
-    WHEN invoicedate like '2011%' THEN '2011'
-    WHEN invoicedate like '2012%' THEN '2012'
-    WHEN invoicedate like '2013%' THEN '2013'
-    END AS 'Year'
-FROM cte_TotalperYear
-ORDER BY Total desc;
+HAVING [Total Spent] >= (SELECT AVG([Total Spent]) FROM cte_CustomerTotal)
+ORDER BY [Total Spent] desc;
 
 
 
@@ -314,26 +133,98 @@ ORDER BY Total_Spent desc;
 
 
 
---Show the Countries that bought over 100 tracks.
+--Create a temp table combining tracks, albums, artists, genres, and media_types tables.
 
-SELECT c.Country, COUNT(item.TrackId) AS TotalTracks
-FROM Customers c
-JOIN invoices i
+DROP TABLE IF EXISTS Temp_TrackDetails;
+CREATE TEMP TABLE Temp_TrackDetails 
+(
+TrackId INT,
+Track varchar(50),
+Album varchar(50),
+Artist varchar(50),
+Genre varchar(50),
+MediaType varchar(50)
+);
+
+INSERT INTO Temp_TrackDetails
+SELECT t.TrackId, t.Name AS [Track], al.Title AS [Album], a.Name AS [Artist], g.Name AS [Genre], mt.Name AS [Media Type]
+FROM artists a
+JOIN albums al
+USING (ArtistId)
+JOIN tracks t
+USING (AlbumId)
+JOIN media_types mt
+USING (MediaTypeId)
+JOIN genres g
+USING (GenreId);
+
+
+--List genres by most popular to least popular and how many tracks are available in that genre.  
+
+WITH cte_GenrePurchased AS 
+(
+SELECT SUM(i.Quantity) AS [Purchased Tracks], t.Genre 
+FROM invoice_items i
+LEFT JOIN Temp_TrackDetails t
+USING(TrackId)
+GROUP BY t.Genre
+ORDER BY SUM(i.Quantity) desc
+),
+cte_GenreTotal AS
+(
+SELECT COUNT(*) [Available Tracks], Genre
+FROM Temp_TrackDetails
+GROUP BY Genre
+ORDER BY COUNT(*) desc
+)
+SELECT gp.[Purchased Tracks], gt.[Available Tracks], gt.Genre
+FROM cte_GenrePurchased gp
+RIGHT JOIN cte_GenreTotal gt
+USING(Genre);
+
+/* 
+List the most popular to least popular genres for each country to help stackholders 
+decide what tracks or artists to add to maximize profits.
+/*
+
+SELECT c.Country, t.Genre, COUNT(t.Genre) AS [Purchased]
+FROM invoices i
+LEFT JOIN customers c 
 USING (CustomerId)
 JOIN invoice_items item
 USING (InvoiceId)
-GROUP BY c.Country
-HAVING COUNT(item.TrackId) >100;
+LEFT JOIN Temp_TrackDetails t
+USING(TrackId)
+GROUP BY t.Genre, c.Country
+ORDER BY Country, COUNT(t.Genre) desc;
 
 
 
---How many tracks are there per artist? 
+/*
+List the total number of songs sold by artist and how many tracks are available in the database 
+to determine if more tracks should be added for a respective artist.
+/*
 
-SELECT art.Name, COUNT(t.trackId) AS [Total Tracks]
-FROM tracks t
-JOIN albums a
-USING (AlbumId)
-JOIN artists art 
-USING (ArtistId)
-GROUP BY art.Name
-ORDER BY [Total Tracks] desc;
+WITH cte_sold AS 
+(
+SELECT SUM(i.Quantity) AS [Total Tracks Sold], t.Artist
+FROM invoice_items i
+LEFT JOIN Temp_TrackDetails t
+USING (TrackId)
+GROUP BY t.Artist
+ORDER BY SUM(i.Quantity) desc
+),
+ cte_total AS 
+(
+SELECT COUNT(*) AS [Available Tracks], Artist
+FROM Temp_TrackDetails
+GROUP BY Artist
+ORDER BY COUNT(*) desc
+)
+
+SELECT s.[Total Tracks Sold], t.[Available Tracks], t.Artist
+FROM cte_sold s
+FULL JOIN cte_total t
+USING(Artist)
+ORDER BY [Total Tracks Sold] desc;
+
